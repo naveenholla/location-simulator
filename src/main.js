@@ -198,10 +198,22 @@ class APClientSimulator {
             this.aps.forEach((ap) => {
                 this.scene.remove(ap);
                 this.dragControls.removeObject(ap);
+                // Remove associated label
+                const label = this.labels.get(ap.uuid);
+                if (label) {
+                    this.scene.remove(label.sprite);
+                    this.labels.delete(ap.uuid);
+                }
             });
             this.clients.forEach((client) => {
                 this.scene.remove(client);
                 this.dragControls.removeObject(client);
+                // Remove associated label
+                const label = this.labels.get(client.uuid);
+                if (label) {
+                    this.scene.remove(label.sprite);
+                    this.labels.delete(client.uuid);
+                }
             });
             
             // Clear the maps
