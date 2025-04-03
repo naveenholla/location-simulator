@@ -271,6 +271,27 @@ async def websocket_endpoint(websocket: WebSocket):
                                         'z': client[3]
                                     })
 
+                        elif message['type'] == 'clear_all':
+                            try:
+                                # Start a transaction for atomic deletion
+                                cursor.execute('BEGIN TRANSACTION')
+                                # Delete all records from RSSI and Messages tables first
+                                cursor.execute('DELETE FROM RSSI')
+                                cursor.execute('DELETE FROM Messages')
+                                # Delete all APs and Clients
+                                cursor.execute('DELETE FROM APs')
+                                cursor.execute('DELETE FROM Clients')
+                                # Commit the transaction
+                                conn.commit()
+                                if connection_active:
+                                    await websocket.send_json({'type': 'clear_all_completed'})
+                            except sqlite3.Error as e:
+                                # Rollback in case of error
+                                conn.rollback()
+                                if connection_active:
+                                    await websocket.send_json({'type': 'error', 'message': f'Failed to clear all: {str(e)}'})
+                                print(f'Error clearing all devices: {str(e)}')
+
                     finally:
                         conn.commit()
 
